@@ -1,0 +1,626 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Postcards from the Moon: Explore the Moon</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap">
+
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Responsive.js"></script>
+
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #04103a;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Pixelify Sans', 'Courier New', monospace;
+}
+
+.stage {
+  position: relative;
+  width: min(100vw, 100vh * 16 / 9);
+  aspect-ratio: 16 / 9;
+  container-type: inline-size;
+  overflow: hidden;
+  background: #04103a;
+}
+
+/* STARS */
+.star {
+  position: absolute;
+  background: #fff;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.star.dot {
+  width: .35cqw;
+  height: .35cqw;
+}
+
+.star.plus {
+  width: 1.1cqw;
+  height: 1.1cqw;
+  background: none;
+}
+
+.star.plus::before,
+.star.plus::after {
+  content: "";
+  position: absolute;
+  background: #fff;
+}
+
+.star.plus::before {
+  left: 0;
+  right: 0;
+  top: 40%;
+  height: 20%;
+}
+
+.star.plus::after {
+  top: 0;
+  bottom: 0;
+  left: 40%;
+  width: 20%;
+}
+
+@keyframes twinkle {
+  0%,100% { opacity: .25; }
+  50% { opacity: 1; }
+}
+
+/* 3D MOON */
+#chartdiv {
+  position: absolute;
+  left: 33.45cqw;
+  top: 3.9cqw;
+  width: 34.5cqw;
+  height: 34.5cqw;
+}
+
+/* HINT */
+.hint {
+  position: absolute;
+  left: 70%;
+  width: 40%;
+  top: 33%;
+  text-align: center;
+  color: #fff;
+  font-size: 1.5cqw;
+  line-height: 1.5;
+  pointer-events: none;
+  text-shadow: .15cqw .15cqw 0 #04103a;
+}
+
+/* ROBOT - ENLARGED */
+.robot {
+  position: absolute;
+  left: 16.3%;
+  top: 78.5%;
+  width: 11.5%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(2cqw);
+  transition: opacity .6s, transform .6s;
+}
+
+.robot.show {
+  opacity: 1;
+  transform: none;
+}
+
+.robot img {
+  width: 100%;
+  display: block;
+  animation: float 3.2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-.7cqw) rotate(3deg);
+  }
+}
+
+/* SPEECH BUBBLES - SMALLER */
+.bubble {
+  position: absolute;
+  left: 30%;
+  bottom: 7.5%;
+  width: 23%;
+  box-sizing: border-box;
+  background: #fff;
+  color: #111;
+  text-align: center;
+  font-size: 1.3cqw;
+  line-height: 1.35;
+  padding: 1.1cqw 1.2cqw;
+  border: .5cqw solid #000;
+  border-radius: .4cqw;
+  box-shadow: -.7cqw .7cqw 0 #8f8f8f;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(.92);
+  transform-origin: 10% 100%;
+  transition: opacity .2s steps(3), transform .2s steps(3);
+}
+
+.bubble.show {
+  opacity: 1;
+  transform: none;
+}
+
+.bubble::before,
+.bubble::after {
+  content: "";
+  position: absolute;
+}
+
+.bubble::before {
+  left: 12%;
+  bottom: -3.1cqw;
+  width: 2.6cqw;
+  height: 2.6cqw;
+  background: #000;
+  clip-path: polygon(
+    0 0, 100% 0, 100% 35%, 70% 35%,
+    70% 65%, 35% 65%, 35% 100%, 0 100%
+  );
+}
+
+.bubble::after {
+  left: calc(12% + .5cqw);
+  bottom: -1.9cqw;
+  width: 1.6cqw;
+  height: 1.6cqw;
+  background: #fff;
+  clip-path: polygon(
+    0 0, 100% 0, 100% 40%, 60% 40%,
+    60% 70%, 30% 70%, 30% 100%, 0 100%
+  );
+}
+
+/* IMAGE CREDIT */
+.credit {
+  position: absolute;
+  right: 1%;
+  bottom: 1.2%;
+  font-size: 1cqw;
+  color: rgba(255,255,255,.6);
+  pointer-events: none;
+}
+
+/* HOME BUTTON */
+.btn {
+  position: absolute;
+  font-family: inherit;
+  text-decoration: none;
+  color: #111;
+  text-align: center;
+  border: .2cqw solid #111;
+  cursor: pointer;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  outline: .3cqw solid #fff;
+  outline-offset: .2cqw;
+}
+
+#home {
+  left: .9%;
+  top: 2.3%;
+  width: 25.6%;
+  height: 6.5%;
+  background: #fff;
+  border-radius: 1.6cqw;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .7cqw;
+  font-weight: 600;
+  font-size: 1.8cqw;
+  white-space: nowrap;
+}
+
+#home svg {
+  width: 2.4cqw;
+  height: 2.4cqw;
+}
+</style>
+</head>
+
+<body>
+
+<div class="stage" id="stage">
+
+  <div id="sky"></div>
+  <div id="chartdiv"></div>
+
+  <a class="btn" id="home" href="index.html"
+     aria-label="Return to Home Screen">
+
+    <svg viewBox="0 0 16 16"
+         shape-rendering="crispEdges"
+         aria-hidden="true">
+      <path fill="#111"
+        d="M8 1h1v1h1v1h1v1h1v1h1v1h1v1h-2v7H3V7H1V6h1V5h1V4h1V3h1V2h1V1z"/>
+    </svg>
+
+    Return to Home Screen
+  </a>
+
+  <p class="hint" id="hint">
+    Click and drag to explore<br>the Moon in 3D.
+  </p>
+
+  <div class="credit">
+    Imagery: NASA’s Scientific Visualization Studio
+  </div>
+
+  <div class="robot" id="robot">
+    <img alt="Luna the robot waving" src="robot-sprite.png">
+  </div>
+
+  <div class="bubble" id="b1">
+    Look at that! We’re finally on the Moon. Our adventure begins!
+  </div>
+
+  <div class="bubble" id="b2">
+    “Let’s start with where it all began! Click on the Apollo 11 landing site to explore humanity’s first Moon landing!”
+  </div>
+
+</div>
+
+<script>
+
+/* SETTINGS */
+
+const APOLLO_PAGE = 'apollo11animation.html';
+const AUTO_SPIN = false;
+
+
+/* BACKGROUND STARS */
+
+let seed = 11;
+
+const rnd0 = () =>
+  (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+const sky = document.getElementById('sky');
+
+function addStar(cls, n) {
+
+  for (let i = 0; i < n; i++) {
+
+    const el = document.createElement('div');
+
+    el.className = 'star ' + cls;
+
+    el.style.left = rnd0() * 98 + '%';
+    el.style.top = rnd0() * 98 + '%';
+
+    el.style.animationDelay = (rnd0() * 3) + 's';
+    el.style.animationDuration = (2 + rnd0() * 3) + 's';
+
+    sky.appendChild(el);
+  }
+}
+
+addStar('dot', 110);
+addStar('plus', 22);
+
+
+/* ROBOT AND MESSAGES */
+
+const wait = ms =>
+  new Promise(r => setTimeout(r, ms));
+
+(async function story() {
+
+  await wait(500);
+
+  document.getElementById('robot').classList.add('show');
+
+  document.getElementById('b1').classList.add('show');
+
+  await wait(3000);
+
+  document.getElementById('b1').classList.remove('show');
+
+  await wait(250);
+
+  document.getElementById('b2').classList.add('show');
+
+})();
+
+
+/* 3D MOON */
+
+var root = am5.Root.new("chartdiv");
+
+root.setThemes([
+  am5themes_Animated.new(root),
+  am5themes_Responsive.new(root)
+]);
+
+
+/* MAP CHART */
+
+var chart = root.container.children.push(
+  am5map.MapChart.new(root, {
+
+    projection: am5map.geoOrthographic(),
+
+    panX: "rotateX",
+    panY: "rotateY",
+
+    minZoomLevel: 0.5,
+
+    rotationX: -33,
+    rotationY: 20
+
+  })
+);
+
+
+/* TRANSPARENT BACKGROUND */
+
+chart.chartContainer.get("background").setAll({
+  fillOpacity: 0
+});
+
+
+/* OPTIONAL AUTO SPIN */
+
+var spin = null;
+var overPin = false;
+
+function startSpin() {
+
+  if (!AUTO_SPIN || spin) return;
+
+  var r = chart.get("rotationX");
+
+  spin = chart.animate({
+    key: "rotationX",
+    from: r,
+    to: r + 360,
+    duration: 120000,
+    loops: Infinity
+  });
+
+}
+
+function stopSpin() {
+
+  if (spin) {
+    spin.stop();
+    spin = null;
+  }
+
+}
+
+if (AUTO_SPIN) {
+
+  var bg = chart.chartContainer.get("background");
+
+  bg.events.on("pointerdown", stopSpin);
+
+  bg.events.on("globalpointerup", function () {
+
+    if (!overPin) startSpin();
+
+  });
+
+  startSpin();
+
+}
+
+
+/* MOON IMAGE */
+
+chart.series.push(
+
+  am5map.MapRasterSeries.new(root, {
+
+    src: "https://cdn.amcharts.com/lib/5/geodata/images/moon2048.jpg"
+
+  })
+
+);
+
+
+/* LATITUDE AND LONGITUDE GRID */
+
+var graticuleSeries = chart.series.push(
+
+  am5map.GraticuleSeries.new(root, {
+    step: 15
+  })
+
+);
+
+graticuleSeries.mapLines.template.setAll({
+
+  stroke: am5.color(0xffffff),
+  strokeOpacity: 0.08
+
+});
+
+
+/* APOLLO 11 LOCATION */
+
+var pointSeries = chart.series.push(
+
+  am5map.MapPointSeries.new(root, {
+
+    latitudeField: "latitude",
+    longitudeField: "longitude",
+    surfaceBullets: true
+
+  })
+
+);
+
+
+pointSeries.bullets.push(function () {
+
+  var container = am5.Container.new(root, {});
+
+
+  /* PULSING RING */
+
+  var ring = container.children.push(
+
+    am5.Circle.new(root, {
+
+      radius: 9,
+      fill: am5.color(0xff2a1a)
+
+    })
+
+  );
+
+  ring.animate({
+    key: "scale",
+    from: 1,
+    to: 2.6,
+    duration: 1600,
+    loops: Infinity
+  });
+
+  ring.animate({
+    key: "opacity",
+    from: 0.6,
+    to: 0,
+    duration: 1600,
+    loops: Infinity
+  });
+
+
+  /* TOOLTIP */
+
+  var tooltip = am5.Tooltip.new(root, {
+
+    getFillFromSprite: false
+
+  });
+
+  tooltip.get("background").setAll({
+
+    fill: am5.color(0xffffff),
+    fillOpacity: 1,
+    stroke: am5.color(0x000000),
+    strokeWidth: 3
+
+  });
+
+  tooltip.label.setAll({
+
+    fill: am5.color(0x111111),
+    fontSize: 14
+
+  });
+
+
+  /* RED APOLLO POINT */
+
+  var circle = container.children.push(
+
+    am5.Circle.new(root, {
+
+      radius: 9,
+
+      fill: am5.color(0xe0301e),
+
+      stroke: am5.color(0xffffff),
+
+      strokeWidth: 2,
+
+      tooltip: tooltip,
+
+      tooltipText: "This is Apollo 11",
+
+      tooltipY: 0,
+
+      cursorOverStyle: "pointer"
+
+    })
+
+  );
+
+
+  circle.states.create("hover", {
+    scale: 1.3
+  });
+
+  circle.events.on("pointerover", function () {
+
+    overPin = true;
+    stopSpin();
+
+  });
+
+  circle.events.on("pointerout", function () {
+
+    overPin = false;
+    startSpin();
+
+  });
+
+  circle.events.on("click", function () {
+
+    window.location.href = APOLLO_PAGE;
+
+  });
+
+
+  return am5.Bullet.new(root, {
+
+    sprite: container
+
+  });
+
+});
+
+
+/* APOLLO 11 COORDINATES */
+
+pointSeries.data.setAll([
+
+  {
+    latitude: 0.674,
+    longitude: 23.473
+  }
+
+]);
+
+
+/* NO ZOOM CONTROL BUTTONS */
+
+
+/* LOAD ANIMATION */
+
+chart.appear(1000, 100);
+
+</script>
+
+</body>
+</html>

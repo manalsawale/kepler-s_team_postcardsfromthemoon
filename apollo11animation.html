@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Apollo 11 | Lunar Approach</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+/* Full-screen GIF background */
+
+.animation-screen {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+}
+
+.animation-screen img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Optional subtle cinematic fade */
+
+.animation-screen {
+    animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="animation-screen">
+
+    <img
+        src="apollo11animation.gif"
+        alt="Apollo 11 zooming towards the Moon's surface"
+    >
+
+</div>
+
+<script>
+
+// Display animation for 6 seconds
+
+setTimeout(function() {
+
+    window.location.href = "apolloinfo.html";
+
+}, 6000);
+
+</script>
+
+</body>
+</html>
+```

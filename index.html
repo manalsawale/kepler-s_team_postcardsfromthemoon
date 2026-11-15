@@ -1,0 +1,310 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Moon Loading Screen</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 55px;
+  background: radial-gradient(ellipse at 50% 48%,
+    #123e91, #0b2865 42%, #061638 100%);
+}
+
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  background: #dceaff;
+  animation: twinkle 3s steps(2) infinite;
+}
+
+.star.big {
+  width: 4px;
+  height: 4px;
+  box-shadow:
+    0 -8px #dceaff,
+    0 8px #dceaff,
+    -8px 0 #dceaff,
+    8px 0 #dceaff,
+    0 0 14px #8dbaff;
+}
+
+@keyframes twinkle {
+  0%,100% { opacity: .25; }
+  50% { opacity: 1; }
+}
+
+.moon-container {
+  position: relative;
+  width: min(280px, 68vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  filter:
+    drop-shadow(0 0 15px #438cff)
+    drop-shadow(0 0 35px #286bdc)
+    drop-shadow(0 0 65px rgba(48,115,255,.5));
+}
+
+#moon {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.loading {
+  color: #dceaff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(11px, 3vw, 16px);
+  letter-spacing: 2px;
+  text-shadow: 4px 4px 0 #061638;
+  z-index: 2;
+}
+
+.dots {
+  display: inline-block;
+  overflow: hidden;
+  width: 0ch;
+  vertical-align: bottom;
+  animation: dots 1.2s steps(4) infinite;
+}
+
+@keyframes dots {
+  from { width: 0ch; }
+  to { width: 4ch; }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="moon-container">
+  <canvas id="moon" width="112" height="112"></canvas>
+</div>
+
+<div class="loading">
+  LOADING<span class="dots">....</span>
+</div>
+
+<script>
+
+// STAR GENERATION
+
+let seed = 17;
+
+function random() {
+  seed = (seed * 16807) % 2147483647;
+  return (seed - 1) / 2147483646;
+}
+
+const stars = document.getElementById("stars");
+
+for (let i = 0; i < 85; i++) {
+  const star = document.createElement("div");
+
+  star.className = random() > .92 ? "star big" : "star";
+
+  const size = random() > .7 ? 3 : 2;
+
+  star.style.left = random() * 100 + "%";
+  star.style.top = random() * 100 + "%";
+
+  if (!star.classList.contains("big")) {
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+  }
+
+  star.style.animationDelay = random() * 4 + "s";
+  stars.appendChild(star);
+}
+
+
+// MOON GENERATION
+
+const canvas = document.getElementById("moon");
+const ctx = canvas.getContext("2d");
+
+const W = canvas.width;
+const H = canvas.height;
+
+const craters = [];
+
+for (let i = 0; i < 48; i++) {
+  craters.push({
+    lon: random() * Math.PI * 2,
+    lat: (random() - .5) * Math.PI * .85,
+    radius: .035 + random() * .10,
+    depth: .3 + random() * .7
+  });
+}
+
+const palette = [
+  [54, 65, 99],
+  [76, 87, 126],
+  [105, 116, 151],
+  [139, 147, 173],
+  [171, 177, 193],
+  [197, 199, 203],
+  [220, 220, 217],
+  [240, 238, 227]
+];
+
+let rotation = 0;
+
+
+// DRAW MOON
+
+function drawMoon() {
+
+  const image = ctx.createImageData(W, H);
+  const data = image.data;
+
+  const radius = 51;
+  const cx = 56;
+  const cy = 56;
+
+  const light = [-.55, .45, .70];
+
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+
+      const dx = (x - cx) / radius;
+      const dy = (y - cy) / radius;
+      const distance = dx * dx + dy * dy;
+
+      const index = (y * W + x) * 4;
+
+      if (distance > 1) {
+        data[index + 3] = 0;
+        continue;
+      }
+
+      const z = Math.sqrt(1 - distance);
+
+      const longitude = Math.atan2(dx, z) + rotation;
+      const latitude = Math.asin(-dy);
+
+      const nx = Math.sin(longitude) * Math.cos(latitude);
+      const ny = Math.sin(latitude);
+      const nz = Math.cos(longitude) * Math.cos(latitude);
+
+      let illumination = Math.max(0,
+        nx * light[0] +
+        ny * light[1] +
+        nz * light[2]
+      );
+
+      let shade = .25 + illumination * .75;
+
+      for (const c of craters) {
+
+        const dot =
+          nx * Math.sin(c.lon) * Math.cos(c.lat) +
+          ny * Math.sin(c.lat) +
+          nz * Math.cos(c.lon) * Math.cos(c.lat);
+
+        const angle = Math.acos(
+          Math.max(-1, Math.min(1, dot))
+        );
+
+        const t = angle / c.radius;
+
+        if (t < .75) {
+          shade -= .20 * c.depth * (1 - t * .25);
+        } else if (t < 1.05) {
+          shade += .19 * c.depth;
+        } else if (t < 1.5) {
+          shade -= .045 * c.depth;
+        }
+      }
+
+      const noise =
+        Math.sin(longitude * 22 + latitude * 13) *
+        Math.cos(latitude * 29) * .025;
+
+      shade += noise;
+
+      const level = Math.max(0, Math.min(
+        palette.length - 1,
+        Math.round(shade * (palette.length - 1))
+      ));
+
+      const color = palette[level];
+
+      data[index] = color[0];
+      data[index + 1] = color[1];
+      data[index + 2] = color[2];
+      data[index + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(image, 0, 0);
+}
+
+
+// ANIMATION
+
+let startTime = null;
+let redirected = false;
+
+function animate(timestamp) {
+
+  if (startTime === null) {
+    startTime = timestamp;
+  }
+
+  const elapsed = timestamp - startTime;
+
+  // One complete rotation every 3 seconds
+  rotation = (elapsed / 3000) * Math.PI * 2;
+
+  // Stop rotating after 3 seconds
+  if (elapsed < 3000) {
+    drawMoon();
+    requestAnimationFrame(animate);
+  } else {
+    rotation = 0;
+    drawMoon();
+
+    if (!redirected) {
+      redirected = true;
+      window.location.href = "page2.html";
+    }
+  }
+}
+
+// START
+
+drawMoon();
+requestAnimationFrame(animate);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,391 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>Postcards from the Moon</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap">
+
+<style>
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: #04103a;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: 'Pixelify Sans', 'Courier New', monospace;
+}
+
+/* ---------- Stage ---------- */
+
+.stage {
+    position: relative;
+    width: min(100vw, 100vh * 16 / 9);
+    aspect-ratio: 16 / 9;
+    container-type: inline-size;
+    overflow: hidden;
+    background: #04103a;
+}
+
+/* ---------- Stars ---------- */
+
+.star {
+    position: absolute;
+    background: #fff;
+    animation: twinkle 3s ease-in-out infinite;
+}
+
+.star.dot {
+    width: .35cqw;
+    height: .35cqw;
+}
+
+.star.plus {
+    width: 1.1cqw;
+    height: 1.1cqw;
+    background: none;
+}
+
+.star.plus::before,
+.star.plus::after {
+    content: "";
+    position: absolute;
+    background: #fff;
+}
+
+.star.plus::before {
+    left: 0;
+    right: 0;
+    top: 40%;
+    height: 20%;
+}
+
+.star.plus::after {
+    top: 0;
+    bottom: 0;
+    left: 40%;
+    width: 20%;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: .25; }
+    50% { opacity: 1; }
+}
+
+/* ---------- Robot ---------- */
+
+.robot {
+    position: absolute;
+    left: 11.5%;
+    top: 25%;
+    width: 35%;
+    opacity: 0;
+    transform: translateY(4cqw);
+    transition: opacity .8s, transform .8s;
+}
+
+.robot.show {
+    opacity: 1;
+    transform: none;
+}
+
+.robot img {
+    width: 100%;
+    display: block;
+    animation: float 3.2s ease-in-out infinite;
+    transform-origin: 50% 60%;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(-3deg);
+    }
+
+    50% {
+        transform: translateY(-1.2cqw) rotate(3deg);
+    }
+}
+
+/* ---------- Speech Bubble ---------- */
+
+.bubble {
+    position: absolute;
+    left: 34.5%;
+    top: 42%;
+    width: 29.5%;
+    box-sizing: border-box;
+    background: #fff;
+    color: #222;
+    text-align: center;
+    line-height: 1.35;
+    border: .22cqw solid #1b1b1b;
+    border-radius: .7cqw;
+    box-shadow: .35cqw .35cqw 0 #8d8da0;
+    padding: 1.1cqw 1.2cqw;
+    opacity: 0;
+    transition: opacity .25s;
+    font-size: 1.4cqw;
+}
+
+.bubble.show {
+    opacity: 1;
+}
+
+.bubble::after {
+    content: "";
+    position: absolute;
+    left: 14%;
+    bottom: -1.7cqw;
+    width: 1.5cqw;
+    height: 1.5cqw;
+    background: #fff;
+    border-right: .22cqw solid #1b1b1b;
+    border-bottom: .22cqw solid #1b1b1b;
+    transform: skewX(35deg) scaleY(.9);
+}
+
+.cursor::after {
+    content: "|";
+    opacity: .6;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+    position: absolute;
+    font-family: inherit;
+    text-decoration: none;
+    color: #111;
+    text-align: center;
+    border: .2cqw solid #111;
+    cursor: pointer;
+}
+
+#home {
+    left: .9%;
+    top: 2.3%;
+    width: 25.6%;
+    height: 6.5%;
+    background: #fff;
+    border-radius: 1.6cqw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .7cqw;
+    font-weight: 600;
+    font-size: 1.9cqw;
+}
+
+#home svg {
+    width: 2.4cqw;
+    height: 2.4cqw;
+}
+
+#view {
+    left: 38.5%;
+    top: 68.5%;
+    width: 20.5%;
+    height: 8.5%;
+    background: #b9b9c2;
+    box-shadow:
+        inset .25cqw .25cqw 0 #e8e8ee,
+        inset -.25cqw -.25cqw 0 #7d7d8a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45cqw;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+}
+
+#view.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.btn:hover,
+.btn:focus-visible {
+    outline: .3cqw solid #fff;
+    outline-offset: .2cqw;
+}
+
+#view:active {
+    box-shadow:
+        inset -.25cqw -.25cqw 0 #e8e8ee,
+        inset .25cqw .25cqw 0 #7d7d8a;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ---------- Background Audio ---------- -->
+
+<audio id="missionSound" src="mission-sound.mp3" preload="auto"></audio>
+
+<div class="stage" id="stage">
+
+    <div id="sky"></div>
+
+    <!-- Home Button -->
+
+    <a class="btn" id="home" href="index.html" aria-label="Return to Home Screen">
+
+        <svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true">
+            <path fill="#111" d="M8 1h1v1h1v1h1v1h1v1h1v1h1v1h-2v7H3V7H1V6h1V5h1V4h1V3h1V2h1V1z"/>
+        </svg>
+
+        Return to Home Screen
+
+    </a>
+
+    <!-- Robot -->
+
+    <div class="robot" id="robot">
+        <img alt="Luna the robot waving" src="robot-sprite.png">
+    </div>
+
+    <!-- One Speech Bubble -->
+
+    <div class="bubble" id="b1"></div>
+
+    <!-- View Button -->
+
+    <a class="btn" id="view" href="lunarapollo.html">
+        Click here to view it
+    </a>
+
+</div>
+
+<script>
+
+// ---------- Stars ----------
+
+let seed = 11;
+
+const rnd = () =>
+    (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+const sky = document.getElementById('sky');
+
+function addStar(cls, n) {
+
+    for (let i = 0; i < n; i++) {
+
+        const el = document.createElement('div');
+
+        el.className = 'star ' + cls;
+
+        el.style.left = rnd() * 98 + '%';
+        el.style.top = rnd() * 98 + '%';
+
+        el.style.animationDelay = (rnd() * 3) + 's';
+        el.style.animationDuration = (2 + rnd() * 3) + 's';
+
+        sky.appendChild(el);
+    }
+}
+
+addStar('dot', 110);
+addStar('plus', 22);
+
+
+// ---------- Timeline ----------
+
+const wait = ms =>
+    new Promise(resolve => setTimeout(resolve, ms));
+
+
+async function type(el, text, speed) {
+
+    el.classList.add('show', 'cursor');
+
+    el.textContent = '';
+
+    for (const ch of text) {
+
+        el.textContent += ch;
+
+        await wait(speed);
+    }
+
+    el.classList.remove('cursor');
+}
+
+
+// ---------- Animation Sequence ----------
+
+(async function play() {
+
+    const robot = document.getElementById('robot');
+    const bubble = document.getElementById('b1');
+    const view = document.getElementById('view');
+
+    // Robot appears
+
+    await wait(1200);
+
+    robot.classList.add('show');
+
+    await wait(1200);
+
+    // First message
+
+    await type(
+        bubble,
+        'Hi there! My name is Luna and I will be your robot companion for this exciting space mission!',
+        45
+    );
+
+    // First message stays for 3 seconds
+
+    await wait(3000);
+
+    // Second message replaces the first
+
+    await type(
+        bubble,
+        'Oh! A postcard for you has come from the moon!',
+        60
+    );
+
+    // Show the View button
+
+    await wait(900);
+
+    view.classList.add('show');
+
+})();
+
+
+// ---------- Background Sound ----------
+
+const missionSound = document.getElementById("missionSound");
+
+function playMissionSound() {
+
+    missionSound.currentTime = 0;
+
+    missionSound.play().catch(error => {
+        console.log("Audio playback blocked:", error);
+    });
+}
+
+window.addEventListener("load", playMissionSound);
+
+</script>
+
+</body>
+</html>
+```
