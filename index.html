@@ -306,5 +306,70 @@ requestAnimationFrame(animate);
 
 </script>
 
+<!-- Background Music -->
+<audio id="backgroundMusic" loop>
+    <source src="space.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Music Control -->
+<button id="musicToggle">🔊 Music On</button>
+
+<style>
+#musicToggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    padding: 10px 15px;
+    border: 1px solid white;
+    border-radius: 25px;
+    background: rgba(10, 20, 45, 0.85);
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+</style>
+
+<script>
+const music = document.getElementById("backgroundMusic");
+const button = document.getElementById("musicToggle");
+
+music.volume = 0.3;
+
+// Restore previous playback position
+const savedTime = localStorage.getItem("musicTime");
+const wasPlaying = localStorage.getItem("musicPlaying");
+
+if (savedTime) {
+    music.currentTime = parseFloat(savedTime);
+}
+
+// Save playback position
+music.addEventListener("timeupdate", () => {
+    localStorage.setItem("musicTime", music.currentTime);
+});
+
+// Play music after visitor interaction
+button.addEventListener("click", () => {
+    if (music.paused) {
+        music.play();
+        localStorage.setItem("musicPlaying", "true");
+        button.innerHTML = "🔊 Music On";
+    } else {
+        music.pause();
+        localStorage.setItem("musicPlaying", "false");
+        button.innerHTML = "🔇 Music Off";
+    }
+});
+
+// Continue music on the next page
+if (wasPlaying === "true") {
+    music.play().catch(() => {
+        button.innerHTML = "🔇 Tap for Music";
+    });
+}
+</script>
+
+
 </body>
 </html>
